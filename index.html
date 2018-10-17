@@ -1,66 +1,241 @@
 <!DOCTYPE html>
-<html lang="en">
+<!--
+Copyright (c) 2016 Google Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
 <head>
-	<meta charset="UTF-8">
-	<title>Log In ActualizaLa</title>
-	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-	<link rel="stylesheet" href="css/bootstrap.css">
-	</head>
-<body>
-	<div class="container">
-		<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  			<a class="navbar-brand"></a>
-  			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-	<h1>Inicia sesión en ActualizaLa</h1>
-	</div>
-	<div class="container">
-		<h3>Por favor inicia sesión</h3>
-		<form>
-  			<div class="form-group">
-    			<label for="exampleInputEmail1">Correo Electrónico</label>
-    			<input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Ingresa tu correo electrónico">
-    		</div>
-  			<div class="form-group">
-    			<label for="exampleInputPassword1">Contraseña</label>
-    			<input type="password" class="form-control" id="exampleInputPassword1" placeholder="Ingresa tu contraseña">
-  			</div>
-  			<div class="form-group form-check">
-    			<input type="checkbox" class="form-check-input" id="exampleCheck1">
-    			<label class="form-check-label" for="exampleCheck1">Recuerdame!</label>
-  			</div>
-  				<button onclick="ingresar()" type="submit" class="btn btn-primary">Ingresar</button>
-          <button onclick="registrar()" type="submit" class="btn btn-secondary">Registarme</button>
-        </form>
-		</div>
-	</div>
-  <div class="container">
-    <footer>
-    <h6>Camilo Bayona Orduz CTO - R & B Lawyers SAS</h6>
-  </footer>
-  </div>
-  <script> 
-    function registrar() {
-  document.getElementById("demo").innerHTML = "Hello World";
-}
+  <meta charset=utf-8 />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login ActualizaLa</title>
 
+  <!-- Material Design Theming -->
+  <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.orange-indigo.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+
+  <link rel="stylesheet" href="css/bootstrap.css">
+
+<!-- Importe y configure el SDK de Firebase -->
+<!-- Estos scripts están disponibles cuando la aplicación se sirve o implementa en Firebase Hosting -->
+<!-- Si no sirve / aloja su proyecto utilizando Firebase Hosting, consulte https://firebase.google.com/docs/web/setup -->
+  <script src="/__/firebase/5.5.3/firebase-app.js"></script>
+  <script src="/__/firebase/5.5.3/firebase-auth.js"></script>
+  <script src="/__/firebase/init.js"></script>
+
+  <script type="text/javascript">
+    /**
+     * Maneja el botón de inicio de sesión presionando.
+     */
+    function toggleSignIn() {
+      if (firebase.auth().currentUser) {
+        // [Iniciar sesión]
+        firebase.auth().signOut();
+        // [Fin de sesión]
+      } else {
+        var email = document.getElementById('email').value;
+        var password = document.getElementById('password').value;
+        if (email.length < 4) {
+          alert('Please enter an email address.');
+          return;
+        }
+        if (password.length < 4) {
+          alert('Please enter a password.');
+          return;
+        }
+// Iniciar sesión con correo electrónico y pasar.
+// [START autenticación con el correo electrónico]
+        firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+// Manejar los errores aquí.
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          // [INCIA_EXCLUSIÓN]
+          if (errorCode === 'auth/wrong-password') {
+            alert('Contraseña incorrecta.');
+          } else {
+            alert(errorMessage);
+          }
+          console.log(error);
+          document.getElementById('quickstart-sign-in').disabled = false;
+          // [FIN_EXCLUSION]
+        });
+        // [FIN AUTHemail]
+      }
+      document.getElementById('quickstart-sign-in').disabled = true;
+    }
+    /**
+     * Maneja el boton de registro
+     */
+    function handleSignUp() {
+      var email = document.getElementById('email').value;
+      var password = document.getElementById('password').value;
+      if (email.length < 4) {
+        alert('Por favor ingrese su email.');
+        return;
+      }
+      if (password.length < 4) {
+        alert('Ingresa una contraseña');
+        return;
+      }
+      // Ingresar con correo electrónico y pasar.
+      // [INICIAR crearcorreoelectronico]
+      firebase.auth().createUserWithEmailAndPassword(email, password).catch(function(error) {
+        // Manejar errores acá.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        // [INICIAR EXCVLUSION]
+        if (errorCode == 'auth/weak-password') {
+          alert('La contraseña es demasiado débil.');
+        } else {
+          alert(errorMessage);
+        }
+        console.log(error);
+        // [FIN EXCLUSION]
+      });
+      // [FIN crearEmail]
+    }
+    /**
+     * Enviar correo de verificación al user.
+     */
+    function sendEmailVerification() {
+      // [START sendemailverification]
+      firebase.auth().currentUser.sendEmailVerification().then(function() {
+        // Email Verification sent!
+        // [START_EXCLUDE]
+        alert('Email Verification Sent!');
+        // [END_EXCLUDE]
+      });
+      // [END sendemailverification]
+    }
+    function sendPasswordReset() {
+      var email = document.getElementById('email').value;
+      // [START sendpasswordemail]
+      firebase.auth().sendPasswordResetEmail(email).then(function() {
+        // Password Reset Email Sent!
+        // [START_EXCLUDE]
+        alert('Password Reset Email Sent!');
+        // [END_EXCLUDE]
+      }).catch(function(error) {
+        // Handle Errors here.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        // [START_EXCLUDE]
+        if (errorCode == 'auth/invalid-email') {
+          alert(errorMessage);
+        } else if (errorCode == 'auth/user-not-found') {
+          alert(errorMessage);
+        }
+        console.log(error);
+        // [END_EXCLUDE]
+      });
+      // [END sendpasswordemail];
+    }
+    /**
+     * initApp maneja la configuración de escuchas de eventos de IU y el registro de escuchas de Firebase auth:
+     * - firebase.auth (). onAuthStateChanged: este oyente se llama cuando el usuario ha iniciado sesión o
+     * fuera, y ahí es donde actualizamos la interfaz de usuario.
+     */
+    function initApp() {
+      // Listening for auth state changes.
+      // [START authstatelistener]
+      firebase.auth().onAuthStateChanged(function(user) {
+        // [START_EXCLUDE silent]
+        document.getElementById('quickstart-verify-email').disabled = true;
+        // [END_EXCLUDE]
+        if (user) {
+          // User is signed in.
+          var displayName = user.displayName;
+          var email = user.email;
+          var emailVerified = user.emailVerified;
+          var photoURL = user.photoURL;
+          var isAnonymous = user.isAnonymous;
+          var uid = user.uid;
+          var providerData = user.providerData;
+          // [START_EXCLUDE]
+          document.getElementById('quickstart-sign-in-status').textContent = 'Signed in';
+          document.getElementById('quickstart-sign-in').textContent = 'Sign out';
+          document.getElementById('quickstart-account-details').textContent = JSON.stringify(user, null, '  ');
+          if (!emailVerified) {
+            document.getElementById('quickstart-verify-email').disabled = false;
+          }
+          // [END_EXCLUDE]
+        } else {
+          // User is signed out.
+          // [START_EXCLUDE]
+          document.getElementById('quickstart-sign-in-status').textContent = 'Signed out';
+          document.getElementById('quickstart-sign-in').textContent = 'Sign in';
+          document.getElementById('quickstart-account-details').textContent = 'null';
+          // [END_EXCLUDE]
+        }
+        // [START_EXCLUDE silent]
+        document.getElementById('quickstart-sign-in').disabled = false;
+        // [END_EXCLUDE]
+      });
+      // [END authstatelistener]
+      document.getElementById('quickstart-sign-in').addEventListener('click', toggleSignIn, false);
+      document.getElementById('quickstart-sign-up').addEventListener('click', handleSignUp, false);
+      document.getElementById('quickstart-verify-email').addEventListener('click', sendEmailVerification, false);
+      document.getElementById('quickstart-password-reset').addEventListener('click', sendPasswordReset, false);
+    }
+    window.onload = function() {
+      initApp();
+    };
   </script>
+</head>
+<body>
+<div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-header">
 
-  <script src="https://www.gstatic.com/firebasejs/5.5.4/firebase.js"></script>
-  <script>
-      // Initialize Firebase
-    var config = {
-      apiKey: "AIzaSyAWAE9rXdAGISb-mR7YWVs5NllbeNaFEZQ",
-      authDomain: "actualiza-la.firebaseapp.com",
-      databaseURL: "https://actualiza-la.firebaseio.com",
-      projectId: "actualiza-la",
-        storageBucket: "actualiza-la.appspot.com",
-      messagingSenderId: "534713419109"
-      };
-      firebase.initializeApp(config);
-   </script>
-  <script src="app.js"></script>
-	<script src="js/bootstrap.min.js"></script>
+  <!-- Header section containing title -->
+  <header class="mdl-layout__header mdl-color-text--white mdl-color--yellow-700">
+    <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-grid">
+      <div class="mdl-layout__header-row mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-cell--8-col-desktop">
+        <a href="/ejemplo.html"><h3>ActualizaLa Authentication</h3></a>
+      </div>
+    </div>
+  </header>
+
+  <main class="mdl-layout__content mdl-color--grey-100">
+    <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-grid">
+
+      <!-- Container for the demo -->
+      <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-cell--12-col-desktop">
+        <div class="mdl-card__title mdl-color--light-blue-600 mdl-color-text--white">
+          <h2 class="mdl-card__title-text">Correo electrónico &amp; Contraseña de autenticación</h2>
+        </div>
+        <div class="mdl-card__supporting-text mdl-color-text--grey-600">
+          <p>Ingrese un correo electrónico y una contraseña a continuación e inicie sesión en una cuenta existente o regístrese</p>
+
+          <input class="mdl-textfield__input" style="display:inline;width:auto;" type="text" id="email" name="email" placeholder="Correo Electrónico"/>
+          &nbsp;&nbsp;&nbsp;
+          <input class="mdl-textfield__input" style="display:inline;width:auto;" type="password" id="password" name="password" placeholder="Contraseña"/>
+          <br/><br/>
+          <button disabled class="mdl-button mdl-js-button mdl-button--raised" id="quickstart-sign-in" name="signin">Ingresar</button>
+          &nbsp;&nbsp;&nbsp;
+          <button class="mdl-button mdl-js-button mdl-button--raised" id="quickstart-sign-up" name="signup">Regístrate</button>
+          &nbsp;&nbsp;&nbsp;
+          <button class="mdl-button mdl-js-button mdl-button--raised" disabled id="quickstart-verify-email" name="verify-email">Enviar correo de verificación</button>
+          &nbsp;&nbsp;&nbsp;
+          <button class="mdl-button mdl-js-button mdl-button--raised" id="quickstart-password-reset" name="verify-email">Enviar contraseña o Restablecer correo electrónico</button>
+
+          <!-- Container where we'll display the user details -->
+          <div class="quickstart-user-details-container">
+            Firebase sign-in status: <span id="quickstart-sign-in-status">Unknown</span>
+            <div>Firebase auth <code>currentUser</code> object value:</div>
+            <pre><code id="quickstart-account-details">null</code></pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
 </body>
 </html>
